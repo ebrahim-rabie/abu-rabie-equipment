@@ -1,0 +1,44 @@
+{
+  "name": "abu-rabie-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Abu Rabie Equipment Center",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db": "node scripts/local-db.js",
+    "import:images": "node utils/importProductImages.js",
+    "seed": "node utils/seeder.js",
+    "indexes": "node config/indexes.js",
+    "test": "node --test --test-concurrency=1 \"tests/*.test.js\"",
+    "test:security": "node --test tests/security.test.js",
+    "test:customer": "node --test tests/customer.test.js",
+    "test:seeder": "node --test tests/seeder.test.js",
+    "test:env": "node --test tests/env.test.js"
+  },
+  "keywords": [
+    "equipment",
+    "ecommerce",
+    "express",
+    "mongodb",
+    "arabic"
+  ],
+  "author": "Abu Rabie Equipment Center",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.4.3",
+    "nodemon": "^3.1.2"
+  }
+}

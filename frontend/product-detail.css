@@ -1,0 +1,86 @@
+.product-detail-page { min-height: 72vh; padding-top: 112px; padding-bottom: 70px; }
+.back-to-products { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px; color: var(--primary-color); }
+.product-detail-state { padding: 55px 20px; text-align: center; color: #ccc; }
+.product-detail-state.is-error { color: #ff8a8a; }
+
+.product-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: clamp(24px, 5vw, 64px);
+    align-items: start;
+    padding: clamp(18px, 4vw, 42px);
+    border: 1px solid #353535;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #292929, #1d1d1d);
+    box-shadow: 0 18px 50px rgba(0,0,0,.22);
+}
+
+.product-gallery { min-width: 0; }
+.product-main-image {
+    display: grid;
+    place-items: center;
+    height: clamp(300px, 42vw, 510px);
+    padding: 24px;
+    overflow: hidden;
+    border-radius: 15px;
+    background: radial-gradient(ellipse at center, #fff, #ededed 78%);
+}
+.product-main-image img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.product-thumbnails { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.product-thumbnail {
+    width: 68px;
+    height: 68px;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 9px;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+.product-thumbnail[aria-pressed="true"] { border: 2px solid var(--primary-color); }
+.product-thumbnail img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+.product-detail-info { min-width: 0; }
+.product-detail-eyebrow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.product-detail-chip { display: inline-flex; padding: 5px 11px; border: 1px solid #454545; border-radius: 999px; color: #ddd; font-size: .82rem; }
+.product-detail-chip.brand { border-color: rgba(252,163,17,.4); color: var(--primary-color); }
+.product-detail-title { margin: 0 0 12px; color: #fff; font-size: clamp(1.5rem, 3vw, 2.2rem); line-height: 1.55; }
+.product-detail-sku { color: #aaa; font-size: .9rem; }
+.product-detail-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin: 22px 0 8px; }
+.product-detail-current-price { color: var(--primary-color); font-size: 1.8rem; font-weight: 900; }
+.product-detail-current-price small { font-size: .95rem; }
+.product-detail-old-price { color: #aaa; text-decoration: line-through; }
+.product-detail-discount { padding: 4px 9px; border-radius: 999px; background: var(--primary-color); color: #111; font-size: .78rem; font-weight: 900; }
+.product-detail-stock { display: inline-flex; align-items: center; gap: 7px; margin: 6px 0 18px; color: #72d6a5; font-size: .9rem; }
+.product-detail-stock.unavailable { color: #ff8686; }
+.product-detail-description { margin: 0; color: #d0d0d0; line-height: 1.95; white-space: pre-line; }
+
+.product-detail-order { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.product-detail-quantity { display: flex; align-items: center; gap: 12px; padding: 0 12px; border: 1px solid #444; border-radius: 9px; }
+.product-detail-quantity input { width: 56px; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; text-align: center; }
+.product-detail-add, .product-detail-whatsapp { display: inline-flex; flex: 1 1 170px; justify-content: center; align-items: center; gap: 8px; min-height: 48px; padding: 10px 15px; border: 0; border-radius: 9px; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; }
+.product-detail-add { background: var(--primary-color); color: #111; }
+.product-detail-add:hover { background: #fff; }
+.product-detail-add:disabled { opacity: .55; cursor: not-allowed; }
+.product-detail-whatsapp { background: #25D366; color: #fff; }
+.product-detail-feedback { min-height: 25px; margin-top: 8px; color: #72d6a5; }
+
+.product-specifications { grid-column: 1 / -1; padding-top: 22px; border-top: 1px solid #383838; }
+.product-specifications h2 { margin: 0 0 14px; font-size: 1.2rem; }
+.product-specifications table { width: 100%; border-collapse: collapse; }
+.product-specifications th, .product-specifications td { padding: 11px 13px; border-bottom: 1px solid #383838; text-align: right; vertical-align: top; }
+.product-specifications th { width: 34%; color: #bbb; font-weight: 600; }
+.product-detail-footer { padding: 20px; border-top: 1px solid #292929; text-align: center; }
+.product-detail-footer a { color: var(--primary-color); }
+
+@media (max-width: 760px) {
+    .product-detail { grid-template-columns: 1fr; padding: 18px; }
+    .product-main-image { height: min(78vw, 390px); }
+    .product-specifications { grid-column: auto; }
+}
+
+@media (max-width: 420px) {
+    .product-detail-page { padding-top: 92px; }
+    .product-detail-order { display: grid; grid-template-columns: 1fr; }
+    .product-detail-quantity { min-height: 46px; justify-content: center; }
+    .product-specifications th, .product-specifications td { padding: 9px 7px; }
+}

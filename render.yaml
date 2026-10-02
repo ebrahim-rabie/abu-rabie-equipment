@@ -1,0 +1,68 @@
+# Render deployment blueprint for Abu Rabie Equipment Center.
+#
+# rootDir is the repository root on purpose, not backend/. The server serves
+# the storefront from frontend/ and the seeder reads data/elkhalily_products.json,
+# so restricting the deploy to backend/ would leave the site with no pages and no
+# catalogue to import.
+
+services:
+  - type: web
+    name: abu-rabie-backend
+    env: node
+    rootDir: .
+    # Preview tier only; select a paid plan in Render before accepting orders.
+    plan: free
+    region: frankfurt
+
+    # --omit=dev because the test tooling (mongodb-memory-server) is not needed
+    # at runtime and would add hundreds of megabytes to the build.
+    buildCommand: cd backend && npm ci --omit=dev
+    startCommand: cd backend && npm start
+
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Replace with the MongoDB Atlas connection string.
+      # Must be URL-encoded if it contains special characters.
+      - key: MONGODB_URI
+        sync: false
+
+      # Set this to the real site URL, e.g. https://abu-rabie.onrender.com
+      # A wildcard is refused in production by config/env.js.
+      - key: CLIENT_URL
+        sync: false
+
+      # Canonical public URL used to generate absolute sitemap entries.
+      - key: SITE_URL
+        sync: false
+
+      # The catalogue imports itself on boot when Mongo is empty, so no seed
+      # command is needed for the first deploy. Use `npm run seed -- --reset`
+      # from a Render shell to rebuild it by hand.
+      - key: ALLOW_OFFLINE_MODE
+        value: "false"
+
+      # Default admin account created by the seeder. Set the password yourself:
+      # a generated value would be unknown and lock you out of the dashboard.
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      - key: WHATSAPP_NUMBER
+        value: "201093044150"
+
+      - key: JWT_EXPIRES_IN
+        value: 7d
+
+      # Request logging is off in production unless this is switched on.
+      - key: LOG_REQUESTS
+        value: "false"

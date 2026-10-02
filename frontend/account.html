@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="حساب العميل - مركز أبو ربيع للمعدات">
+    <title>حسابي - مركز أبو ربيع للمعدات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="account.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="assets/logo.jpg" alt="شعار مركز أبو ربيع للمعدات">
+            </a>
+            <ul class="nav-links" id="site-navigation">
+                <li><a href="cart.html" class="nav-cart-link"><i class="fa-solid fa-cart-shopping"></i> السلة <span class="nav-cart-count" aria-live="polite">0</span></a></li>
+                <li><a href="index.html">الرئيسية</a></li>
+                <li><a href="products.html">المنتجات</a></li>
+                <li><a href="index.html#services">خدماتنا</a></li>
+                <li><a href="account.html" class="active">حسابي</a></li>
+                <li><a href="index.html#contact-form" class="btn-primary">اتصل بنا</a></li>
+            </ul>
+            <button type="button" class="menu-toggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="site-navigation">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="account-page">
+
+        <!-- Signed out -->
+        <section id="auth-view" class="auth-view container" hidden>
+            <div class="auth-card">
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab active" data-tab="login">تسجيل الدخول</button>
+                    <button type="button" class="auth-tab" data-tab="register">حساب جديد</button>
+                </div>
+
+                <!-- Login -->
+                <form id="login-form" class="auth-form">
+                    <label for="login-phone">رقم الهاتف</label>
+                    <input type="tel" id="login-phone" inputmode="tel" autocomplete="tel"
+                        placeholder="01xxxxxxxxx" required>
+
+                    <label for="login-password">كلمة المرور</label>
+                    <input type="password" id="login-password" autocomplete="current-password"
+                        placeholder="••••••••" required>
+
+                    <p class="form-error" id="login-error" role="alert" hidden></p>
+
+                    <button type="submit" class="btn-checkout" id="login-submit">
+                        <i class="fa-solid fa-right-to-bracket"></i> دخول
+                    </button>
+                </form>
+
+                <!-- Register -->
+                <form id="register-form" class="auth-form" hidden>
+                    <label for="reg-name">الاسم بالكامل</label>
+                    <input type="text" id="reg-name" autocomplete="name" placeholder="محمد أحمد" required>
+
+                    <label for="reg-phone">رقم الهاتف</label>
+                    <input type="tel" id="reg-phone" inputmode="tel" autocomplete="tel"
+                        placeholder="01xxxxxxxxx" required>
+                    <small class="form-hint">سنستخدمه للتواصل بشأن طلباتك فقط.</small>
+
+                    <label for="reg-password">كلمة المرور</label>
+                    <input type="password" id="reg-password" autocomplete="new-password"
+                        placeholder="6 أحرف على الأقل" required minlength="6">
+
+                    <label for="reg-confirm">تأكيد كلمة المرور</label>
+                    <input type="password" id="reg-confirm" autocomplete="new-password"
+                        placeholder="••••••••" required minlength="6">
+
+                    <p class="form-error" id="register-error" role="alert" hidden></p>
+
+                    <button type="submit" class="btn-checkout" id="register-submit">
+                        <i class="fa-solid fa-user-plus"></i> إنشاء الحساب
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Signed in -->
+        <section id="dashboard-view" class="dashboard container" hidden>
+            <header class="dashboard-header">
+                <div>
+                    <h1 id="greeting">مرحباً بك</h1>
+                    <p id="member-since" class="muted"></p>
+                </div>
+                <button type="button" id="logout-btn" class="btn-outline">
+                    <i class="fa-solid fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </header>
+
+            <nav class="account-tabs">
+                <button type="button" class="account-tab active" data-panel="orders">
+                    <i class="fa-solid fa-box"></i> طلباتي
+                </button>
+                <button type="button" class="account-tab" data-panel="profile">
+                    <i class="fa-solid fa-user"></i> بياناتي
+                </button>
+                <button type="button" class="account-tab" data-panel="addresses">
+                    <i class="fa-solid fa-location-dot"></i> عناويني
+                </button>
+                <button type="button" class="account-tab" data-panel="security">
+                    <i class="fa-solid fa-lock"></i> الأمان
+                </button>
+            </nav>
+
+            <!-- Orders -->
+            <div class="account-panel active" data-panel="orders">
+                <div id="orders-list" class="orders-list"></div>
+            </div>
+
+            <!-- Profile -->
+            <div class="account-panel" data-panel="profile">
+                <form id="profile-form" class="panel-form">
+                    <label for="profile-name">الاسم بالكامل</label>
+                    <input type="text" id="profile-name" required minlength="3">
+
+                    <label for="profile-phone">رقم الهاتف</label>
+                    <input type="tel" id="profile-phone" inputmode="tel" required>
+                    <small class="form-hint">تغيير الرقم يتطلب رقماً غير مستخدم.</small>
+
+                    <p class="form-error" id="profile-error" role="alert" hidden></p>
+                    <p class="form-success" id="profile-success" role="status" hidden></p>
+
+                    <button type="submit" class="btn-checkout">حفظ التعديلات</button>
+                </form>
+            </div>
+
+            <!-- Addresses -->
+            <div class="account-panel" data-panel="addresses">
+                <div id="addresses-list" class="addresses-list"></div>
+
+                <form id="address-form" class="panel-form">
+                    <h3 id="address-form-title">إضافة عنوان جديد</h3>
+                    <label for="addr-label">اسم العنوان</label>
+                    <input type="text" id="addr-label" placeholder="المنزل، العمل..." required maxlength="60">
+
+                    <label for="addr-line">العنوان بالتفصيل</label>
+                    <input type="text" id="addr-line" placeholder="رقم المبنى، الشارع، الدور" required
+                        maxlength="200">
+
+                    <label for="addr-city">المدينة / المنطقة</label>
+                    <input type="text" id="addr-city" required maxlength="80">
+
+                    <label for="addr-notes">ملاحظات للعامل (اختياري)</label>
+                    <input type="text" id="addr-notes" maxlength="200">
+
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="addr-default">
+                        <span>اجعله العنوان الافتراضي</span>
+                    </label>
+
+                    <p class="form-error" id="address-error" role="alert" hidden></p>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-checkout" id="address-submit">حفظ العنوان</button>
+                        <button type="button" class="btn-outline" id="address-cancel" hidden>إلغاء</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security -->
+            <div class="account-panel" data-panel="security">
+                <form id="password-form" class="panel-form">
+                    <h3>تغيير كلمة المرور</h3>
+
+                    <label for="pw-current">كلمة المرور الحالية</label>
+                    <input type="password" id="pw-current" autocomplete="current-password" required>
+
+                    <label for="pw-new">كلمة المرور الجديدة</label>
+                    <input type="password" id="pw-new" autocomplete="new-password" required minlength="6">
+
+                    <label for="pw-confirm">تأكيد كلمة المرور الجديدة</label>
+                    <input type="password" id="pw-confirm" autocomplete="new-password" required minlength="6">
+
+                    <p class="form-error" id="password-error" role="alert" hidden></p>
+                    <p class="form-success" id="password-success" role="status" hidden></p>
+
+                    <button type="submit" class="btn-checkout">تحديث كلمة المرور</button>
+                </form>
+
+                <div class="danger-zone">
+                    <h3>حذف الحساب</h3>
+                    <p>سيتم حذف حسابك وعناوينك نهائياً. الطلبات السابقة لن تُحذف.</p>
+                    <button type="button" id="delete-account-btn" class="btn-danger">
+                        <i class="fa-solid fa-trash"></i> حذف حسابي
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Order detail -->
+    <div id="order-modal" class="modal" hidden>
+        <div class="modal-card">
+            <button type="button" class="modal-close" id="order-modal-close" aria-label="إغلاق">&times;</button>
+            <div id="order-modal-body"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo" style="margin-bottom: 10px; justify-content: center;">
+                        <img src="assets/logo.jpg" alt="شعار مركز أبو ربيع" style="height: 80px;">
+                    </div>
+                    <h2>مركز أبو ربيع</h2>
+                    <p>شريكك في النجاح.</p>
+                </div>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/profile.php?id=100063971745816" target="_blank"
+                        rel="noopener" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="https://wa.me/201093044150" target="_blank" rel="noopener"
+                        title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="tel:01093044150" title="Phone"><i class="fa-solid fa-phone"></i></a>
+                    <a href="https://maps.app.goo.gl/7jQEihM3ueZxghSE9" target="_blank" rel="noopener"
+                        title="Location"><i class="fa-solid fa-location-dot"></i></a>
+                </div>
+                <div class="contact-info" style="margin-top: 20px; text-align: center; width: 100%;">
+                    <p><i class="fa-solid fa-phone"></i> 01287221351 - 01093044150</p>
+                    <p><i class="fa-solid fa-user-tie"></i> إدارة: م/ محمد أبو ربيع</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 مركز أبو ربيع للمعدات. جميع الحقوق محفوظة. | <a href="admin/"
+                        style="color: var(--primary-color);"><i class="fa-solid fa-lock"></i> لوحة الإدارة</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="store-settings.js"></script>
+    <script src="script.js"></script>
+    <script src="account.js"></script>
+    <script src="cart.js"></script>
+</body>
+
+</html>

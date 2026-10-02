@@ -949,15 +949,24 @@ ul {
 
 .product-img {
     height: 230px;
-    padding: 18px;
+    padding: 16px;
     overflow: hidden;
-    background: radial-gradient(ellipse at center, #fff 0%, #f3f3f3 68%, #e8e8e8 100%);
+    background: #f5f5f3;
+}
+
+.product-card .product-image-link {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    overflow: hidden;
 }
 
 .product-img img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    object-position: center;
     mix-blend-mode: multiply;
     transition: transform .3s ease;
 }
@@ -1055,7 +1064,7 @@ ul {
 
 @media (max-width: 600px) {
     .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .product-img { height: 165px; padding: 12px; }
+    .product-img { height: auto; aspect-ratio: 1 / 1; padding: 10px; }
     .product-card .product-info { padding: 12px; }
     .product-card .product-meta { display: block; }
     .product-card .sku-tag { display: inline-block; max-width: 100%; margin-bottom: 4px; }
@@ -1067,7 +1076,7 @@ ul {
 
 @media (max-width: 360px) {
     .products-grid { grid-template-columns: 1fr; }
-    .product-img { height: 210px; }
+    .product-img { height: auto; aspect-ratio: 4 / 3; }
 }
 
 /* Floating Cart Bubble */
@@ -1301,4 +1310,37 @@ ul {
 
 .btn-checkout:hover {
     background-color: #1ebc59;
+}
+html[data-price-visibility="loading"] .customer-price,
+html[data-price-visibility="hidden"] .customer-price,
+html[data-price-visibility="hidden"] .customer-discount {
+    display: none !important;
+}
+
+html[data-price-visibility="loading"] .price-container,
+html[data-price-visibility="hidden"] .price-container,
+html[data-price-visibility="loading"] .home-product-price,
+html[data-price-visibility="hidden"] .home-product-price,
+html[data-price-visibility="loading"] .product-detail-price,
+html[data-price-visibility="hidden"] .product-detail-price,
+html[data-price-visibility="loading"] #cart-page-total,
+html[data-price-visibility="hidden"] #cart-page-total,
+html[data-price-visibility="loading"] #cart-total,
+html[data-price-visibility="hidden"] #cart-total,
+html[data-price-visibility="loading"] .item-price,
+html[data-price-visibility="hidden"] .item-price,
+html[data-price-visibility="loading"] .cart-line-total,
+html[data-price-visibility="hidden"] .cart-line-total,
+html[data-price-visibility="loading"] #cart-page-items .cart-page-item p,
+html[data-price-visibility="hidden"] #cart-page-items .cart-page-item p,
+html[data-price-visibility="loading"] .order-meta span:nth-child(2),
+html[data-price-visibility="hidden"] .order-meta span:nth-child(2),
+html[data-price-visibility="loading"] .modal-item strong,
+html[data-price-visibility="hidden"] .modal-item strong,
+html[data-price-visibility="loading"] #order-modal-body .summary-row strong,
+html[data-price-visibility="hidden"] #order-modal-body .summary-row strong,
+html[data-price-visibility="hidden"] .discount-badge,
+html[data-price-visibility="hidden"] .old-price,
+html[data-price-visibility="hidden"] .product-detail-discount {
+    display: none !important;
 }

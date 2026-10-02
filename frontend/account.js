@@ -509,6 +509,7 @@ const toast = (message) => {
 // ---------------------------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (window.storeSettingsReady) await window.storeSettingsReady;
     document.querySelectorAll('.auth-tab').forEach((tab) => {
         tab.addEventListener('click', () => showTab(tab.dataset.tab));
     });

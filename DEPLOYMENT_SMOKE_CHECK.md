@@ -3,6 +3,11 @@
 Replace `APP_URL` with the deployed HTTPS origin, without a trailing slash.
 Use a temporary product and image for write checks, then remove them afterward.
 
+Before the first deploy, rotate the Atlas password shared in chat, create a
+database user limited to `abu_rabie`, and add the Render service's outbound IP
+ranges to Atlas Network Access. Deploy a preview first; choose a paid Render
+service and a tested Atlas backup plan before treating it as production.
+
 ## Public site and API
 
 - [ ] `GET APP_URL/` returns the storefront.
@@ -19,15 +24,18 @@ Use a temporary product and image for write checks, then remove them afterward.
 
 - [ ] Log in at `/admin/` using the credentials configured in Render.
 - [ ] Create a temporary product, edit it, and delete it.
-- [ ] Upload a small JPG or PNG and confirm it loads from the returned `/uploads/`
-      URL.
+- [ ] Upload a small JPG or PNG and confirm it loads from the returned `/media/`
+      URL. Product image binaries should appear in Atlas `productImages.files`
+      and `productImages.chunks`.
 - [ ] Restart or redeploy the service, then confirm the uploaded image URL still
-      loads. This verifies the persistent disk is mounted and `UPLOAD_DIR` points
-      to it.
+      loads from Atlas.
 - [ ] Confirm an invalid login is rejected and admin APIs require authentication.
 
 ## Storefront workflow
 
+- [ ] In the admin products tab, hide prices; reload the home, catalogue,
+      product detail, cart, and account pages and confirm customer price labels
+      are hidden. Show prices again and confirm the setting persists after reload.
 - [ ] Search for a product and move between catalogue pages.
 - [ ] Add a product to the cart and confirm the displayed price matches the API.
 - [ ] Submit a small test order and verify it appears in the admin order list.

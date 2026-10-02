@@ -10,14 +10,9 @@ services:
     name: abu-rabie-backend
     env: node
     rootDir: .
+    # Preview tier only; select a paid plan in Render before accepting orders.
     plan: free
     region: frankfurt
-
-    # Preserve admin product images across restarts and deploys.
-    disk:
-      name: product-uploads
-      mountPath: /var/data
-      sizeGB: 1
 
     # --omit=dev because the test tooling (mongodb-memory-server) is not needed
     # at runtime and would add hundreds of megabytes to the build.
@@ -71,6 +66,3 @@ services:
       # Request logging is off in production unless this is switched on.
       - key: LOG_REQUESTS
         value: "false"
-
-      - key: UPLOAD_DIR
-        value: /var/data/uploads

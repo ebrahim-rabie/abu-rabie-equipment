@@ -27,8 +27,53 @@ document.getElementById('login-screen').style.display = 'flex';
     } else {
 document.getElementById('login-screen').style.display = 'none';
 loadDashboardStats();
+loadPriceVisibilitySetting();
     }
 }
+
+let storefrontPricesShown = true;
+const priceVisibilityButton = document.getElementById('btn-toggle-prices');
+
+function renderPriceVisibilityButton() {
+    if (!priceVisibilityButton) return;
+    priceVisibilityButton.setAttribute('aria-pressed', String(storefrontPricesShown));
+    priceVisibilityButton.innerHTML = storefrontPricesShown
+        ? '<i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span>إخفاء الأسعار عن العملاء</span>'
+        : '<i class="fa-solid fa-eye" aria-hidden="true"></i><span>إظهار الأسعار للعملاء</span>';
+}
+
+async function loadPriceVisibilitySetting() {
+    try {
+        const response = await fetch(`${API_BASE}/settings/public`);
+        const result = await response.json();
+        if (response.ok && result.success && typeof result.data?.showPrices === 'boolean') {
+            storefrontPricesShown = result.data.showPrices;
+            renderPriceVisibilityButton();
+        }
+    } catch {
+        showToast('تعذر تحميل إعداد عرض الأسعار', 'error');
+    }
+}
+
+priceVisibilityButton?.addEventListener('click', async () => {
+    priceVisibilityButton.disabled = true;
+    try {
+        const response = await fetch(`${API_BASE}/settings/prices`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ showPrices: !storefrontPricesShown }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'تعذر تحديث إعداد الأسعار');
+        storefrontPricesShown = result.data.showPrices;
+        renderPriceVisibilityButton();
+        showToast(storefrontPricesShown ? 'تم إظهار الأسعار للعملاء' : 'تم إخفاء الأسعار عن العملاء');
+    } catch (error) {
+        showToast(error.message || 'تعذر تحديث إعداد الأسعار', 'error');
+    } finally {
+        priceVisibilityButton.disabled = false;
+    }
+});
 
 // Login Handler
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -49,6 +94,7 @@ if (data.success) {
     document.getElementById('login-screen').style.display = 'none';
     showToast('تم تسجيل الدخول بنجاح');
     loadDashboardStats();
+    loadPriceVisibilitySetting();
 } else {
     showToast(data.message || 'بيانات الدخول غير صحيحة', 'error');
 }
@@ -366,21 +412,24 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
 
     // Handle image file upload first if selected
     if (fileInput.files.length > 0) {
-const formData = new FormData();
-formData.append('image', fileInput.files[0]);
-try {
-    const uploadRes = await fetch(`${API_BASE}/upload/image`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${authToken}` },
-        body: formData
-    });
-    const uploadData = await uploadRes.json();
-    if (uploadData.success) {
-        imageUrl = uploadData.data.url;
-    }
-} catch (err) {
-    console.error('Upload failed, continuing with direct url');
-}
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+        try {
+            const uploadRes = await fetch(`${API_BASE}/upload/image`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` },
+                body: formData
+            });
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok || !uploadData.success || !uploadData.data?.path) {
+                showToast(uploadData.message || 'تعذر رفع الصورة إلى قاعدة البيانات', 'error');
+                return;
+            }
+            imageUrl = uploadData.data.path;
+        } catch (err) {
+            showToast('تعذر رفع الصورة. لم يتم حفظ المنتج.', 'error');
+            return;
+        }
     }
 
     const payload = {

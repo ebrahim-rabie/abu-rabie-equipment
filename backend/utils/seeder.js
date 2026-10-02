@@ -135,7 +135,7 @@ const loadLocalProductImages = () => {
     const match = filename.match(/^(\d+)-(\d+)\.(?:jpe?g|png|webp|avif|gif)$/i);
     if (!match) continue;
     const paths = bySourceId.get(match[1]) || [];
-    paths.push({ order: Number(match[2]), path: `/uploads/product-images/${filename}` });
+    paths.push({ order: Number(match[2]), path: `/media/${filename}` });
     bySourceId.set(match[1], paths);
   }
 

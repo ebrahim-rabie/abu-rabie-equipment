@@ -1,58 +1,65 @@
-// @desc    Upload single image
-// @route   POST /api/upload/image
-// @access  Private (Admin)
-const uploadSingle = (req, res) => {
+const crypto = require('crypto');
+const path = require('path');
+const { Readable } = require('stream');
+const { contentTypeForFilename, getProductImageBucket } = require('../utils/productImageStorage');
+
+const saveImage = async (file) => {
+  const extension = path.extname(file.originalname).toLowerCase();
+  const filename = `product-${Date.now()}-${crypto.randomBytes(8).toString('hex')}${extension}`;
+  const bucket = getProductImageBucket();
+  const upload = bucket.openUploadStream(filename, {
+    metadata: { contentType: file.mimetype || contentTypeForFilename(filename) },
+  });
+
+  await new Promise((resolve, reject) => {
+    Readable.from([file.buffer]).pipe(upload).on('finish', resolve).on('error', reject);
+  });
+  return filename;
+};
+
+const responseFor = (req, filename) => ({
+  filename,
+  url: `${req.protocol}://${req.get('host')}/media/${filename}`,
+  path: `/media/${filename}`,
+});
+
+// @route POST /api/upload/image (admin only)
+const uploadSingle = async (req, res, next) => {
   if (!req.file) {
-    return res.status(400).json({
-      success: false,
-      message: 'لم يتم اختيار أي ملف للرفع',
-    });
+    return res.status(400).json({ success: false, message: 'No image file was provided' });
   }
 
-  // Construct accessible URL
-  const protocol = req.protocol;
-  const host = req.get('host');
-  const imageUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
-
-  res.json({
-    success: true,
-    message: 'تم رفع الصورة بنجاح',
-    data: {
-      filename: req.file.filename,
-      url: imageUrl,
-      path: `/uploads/${req.file.filename}`,
-    },
-  });
+  try {
+    const filename = await saveImage(req.file);
+    return res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: responseFor(req, filename),
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
 
-// @desc    Upload multiple images (max 5)
-// @route   POST /api/upload/images
-// @access  Private (Admin)
-const uploadMultiple = (req, res) => {
+// @route POST /api/upload/images (admin only, max five images)
+const uploadMultiple = async (req, res, next) => {
   if (!req.files || req.files.length === 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'لم يتم اختيار أي ملفات للرفع',
-    });
+    return res.status(400).json({ success: false, message: 'No image files were provided' });
   }
 
-  const protocol = req.protocol;
-  const host = req.get('host');
-
-  const uploaded = req.files.map((file) => ({
-    filename: file.filename,
-    url: `${protocol}://${host}/uploads/${file.filename}`,
-    path: `/uploads/${file.filename}`,
-  }));
-
-  res.json({
-    success: true,
-    message: `تم رفع ${uploaded.length} صور بنجاح`,
-    data: uploaded,
-  });
+  try {
+    const uploaded = [];
+    for (const file of req.files) {
+      uploaded.push(responseFor(req, await saveImage(file)));
+    }
+    return res.json({
+      success: true,
+      message: `${uploaded.length} images uploaded successfully`,
+      data: uploaded,
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
 
-module.exports = {
-  uploadSingle,
-  uploadMultiple,
-};
+module.exports = { uploadSingle, uploadMultiple };

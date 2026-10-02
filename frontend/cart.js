@@ -68,7 +68,8 @@
         }
     };
 
-    const initCartPage = () => {
+    const initCartPage = async () => {
+        if (window.storeSettingsReady) await window.storeSettingsReady;
         const list = document.getElementById('cart-page-items');
         if (!list) return;
         const total = document.getElementById('cart-page-total');
@@ -103,7 +104,7 @@
                             <button type="button" class="cart-remove" data-cart-remove="${escapeHtml(item.id)}" aria-label="حذف ${escapeHtml(item.name)}">حذف</button>
                         </div>
                     </div>
-                    <strong class="cart-line-total">${money((Number(item.price) || 0) * (Number(item.quantity) || 0))}</strong>
+                    <strong class="cart-line-total customer-price">${money((Number(item.price) || 0) * (Number(item.quantity) || 0))}</strong>
                 </article>
             `).join('');
 

@@ -25,6 +25,7 @@ const state = {
     sort: '',
     search: '',
     loading: false,
+    showPrices: true,
 };
 
 // Products are cached across page changes so the cart can still resolve a
@@ -39,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
+    if (window.storeSettingsReady) await window.storeSettingsReady;
+    state.showPrices = window.storeSettings?.showPrices !== false;
     setupCartUI();
     setupEventListeners();
     await loadCategories();
@@ -256,7 +259,7 @@ function renderProducts() {
             p.discountPct ||
             (hasDiscount ? Math.round(((p.price - p.salePrice) / p.price) * 100) : 0);
 
-        const waMsg = `السلام عليكم م/ محمد، أود الاستفسار وطلب:\n- ${p.name}\n- الكود: ${p.sku || 'N/A'}\n- السعر: ${currentPrice} ج.م\nالرابط: ${window.location.href}`;
+        const waMsg = `السلام عليكم م/ محمد، أود الاستفسار وطلب:\n- ${p.name}\n- الكود: ${p.sku || 'N/A'}${state.showPrices ? `\n- السعر: ${currentPrice} ج.م` : ''}\nالرابط: ${window.location.href}`;
         const waUrl = `https://wa.me/201093044150?text=${encodeURIComponent(waMsg)}`;
 
         const categoryLabel = p.categoryName || (p.category && p.category.name) || 'معدات';
@@ -264,7 +267,7 @@ function renderProducts() {
         return `
             <div class="product-card" data-id="${escapeHtml(p._id)}">
                 <div class="product-img">
-                    ${discountPct > 0 ? `<span class="discount-badge">خصم ${discountPct}%</span>` : ''}
+                    ${state.showPrices && discountPct > 0 ? `<span class="discount-badge customer-discount">خصم ${discountPct}%</span>` : ''}
                     ${!p.inStock ? '<span class="out-of-stock-badge">غير متوفر</span>' : ''}
                     <a class="product-image-link" href="product.html?slug=${encodeURIComponent(p.slug || p._id)}" aria-label="تفاصيل ${escapeHtml(p.name)}">
                         <img src="${escapeHtml(p.image || 'assets/logo.jpg')}" alt="${escapeHtml(p.name)}"
@@ -277,7 +280,7 @@ function renderProducts() {
                         ${p.sku ? `<span class="sku-tag">كود: ${escapeHtml(p.sku)}</span>` : ''}
                     </div>
                     <h3><a class="product-title-link" href="product.html?slug=${encodeURIComponent(p.slug || p._id)}">${escapeHtml(p.name)}</a></h3>
-                    <div class="price-container">
+                    <div class="price-container customer-price">
                         ${hasDiscount ? `<span class="old-price">${p.price} ج.م</span>` : ''}
                         <span class="price">${currentPrice} ج.م</span>
                     </div>
@@ -453,7 +456,7 @@ function setupCartUI() {
             <div class="cart-summary">
                 <div class="summary-row">
                     <span>الإجمالي التقديري:</span>
-                    <strong id="cart-total" style="color: var(--primary-color); font-size: 1.3rem;">0 ج.م</strong>
+                    <strong id="cart-total" class="customer-price" style="color: var(--primary-color); font-size: 1.3rem;">0 ج.م</strong>
                 </div>
                 <form id="checkout-form" class="checkout-form">
                     <h4>بيانات التوصيل والطلب:</h4>
@@ -540,7 +543,7 @@ function renderCartItems() {
                 <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
                 <div class="item-details">
                     <h4>${escapeHtml(item.name)}</h4>
-                    <span class="item-price">${item.price} ج.م</span>
+                    <span class="item-price customer-price">${item.price} ج.م</span>
                     <div class="qty-controls">
                         <button type="button" data-cart-delta="-1" data-id="${escapeHtml(item.id)}" aria-label="تقليل كمية ${escapeHtml(item.name)}">-</button>
                         <span>${item.quantity}</span>
@@ -562,7 +565,7 @@ function renderCartItems() {
         btn.addEventListener('click', () => removeFromCart(btn.dataset.cartRemove));
     });
 
-    totalEl.textContent = `${total} ج.م`;
+    totalEl.textContent = state.showPrices ? `${total} ج.م` : '';
 }
 
 // Handle Order Checkout

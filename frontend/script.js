@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ? (window.location.port === '5000' ? '/api' : 'http://localhost:5000/api')
             : '/api';
         const loadHomeProducts = async () => {
+            if (window.storeSettingsReady) await window.storeSettingsReady;
+            const showPrices = window.storeSettings?.showPrices !== false;
             const controller = new AbortController();
             const timeout = window.setTimeout(() => controller.abort(), 6500);
             try {
@@ -44,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     image.loading = 'lazy';
                     image.onerror = () => { image.src = 'assets/logo.jpg'; };
                     imageLink.append(image);
-                    if (discounted) {
+                    if (showPrices && discounted) {
                         const badge = document.createElement('span');
-                        badge.className = 'home-product-discount';
+                        badge.className = 'home-product-discount customer-discount';
                         badge.textContent = `خصم ${Math.round((1 - price / originalPrice) * 100)}%`;
                         imageLink.append(badge);
                     }
@@ -64,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const bottom = document.createElement('div');
                     bottom.className = 'home-product-bottom';
                     const priceLabel = document.createElement('p');
-                    priceLabel.className = 'home-product-price';
+                    priceLabel.className = 'home-product-price customer-price';
                     priceLabel.textContent = `${price.toLocaleString('en-EG')} ج.م`;
                     if (discounted) {
                         const oldPrice = document.createElement('del');
@@ -167,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const name = document.createElement('strong');
                     name.textContent = product.name || 'منتج';
                     const price = document.createElement('small');
+                    price.className = 'customer-price';
                     price.textContent = `${Number(product.salePrice || product.price || 0).toLocaleString('en-EG')} ج.م`;
                     details.append(name, price);
                     link.append(image, details);

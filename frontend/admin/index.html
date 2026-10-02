@@ -856,6 +856,10 @@
                         <div class="panel-tools">
                             <input type="search" id="admin-product-search" class="admin-search"
                                 placeholder="ابحث باسم المنتج أو الكود...">
+                            <button type="button" class="btn-action" id="btn-toggle-prices" aria-pressed="true">
+                                <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+                                <span>إخفاء الأسعار عن العملاء</span>
+                            </button>
                             <button type="button" class="btn-action" id="btn-add-product">
                                 <i class="fa-solid fa-plus"></i> إضافة منتج جديد
                             </button>
@@ -992,7 +996,8 @@
                 <div class="form-group">
                     <label>رابط الصورة المباشر أو الرفع</label>
                     <input type="text" id="prod-image" class="form-control" placeholder="https://... أو مسار الصورة">
-                    <input type="file" id="prod-file" accept="image/*" style="margin-top: 10px; color: var(--text-muted);">
+                    <input type="file" id="prod-file" accept=".jpg,.jpeg,.png,.webp,.avif,.gif" style="margin-top: 10px; color: var(--text-muted);">
+                    <small style="display:block; margin-top:8px; color:var(--text-muted);">عند اختيار ملف، سيتم حفظ الصورة في MongoDB Atlas. الصيغ المدعومة حتى 5 ميجابايت: JPG وPNG وWebP وAVIF وGIF.</small>
                 </div>
                 <div class="form-group">
                     <label>وصف المنتج ومواصفاته</label>

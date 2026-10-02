@@ -15,6 +15,11 @@ const { apiLimiter } = require('./middleware/rateLimit.middleware');
 
 const app = express();
 
+const connectSources = ["'self'"];
+if (!isProduction()) {
+  connectSources.push('http://localhost:5000', 'http://127.0.0.1:5000');
+}
+
 // Render terminates HTTPS at its edge proxy. Trust its single forwarded hop so
 // absolute URLs generated for crawlers keep the public HTTPS scheme.
 if (isProduction() && process.env.RENDER) {
@@ -45,7 +50,7 @@ app.use(
         // Every scraped product image is hotlinked from the supplier
         // catalogue until it is self-hosted.
         imgSrc: ["'self'", 'data:', 'https://elkhalily.com', 'https://www.elkhalily.com'],
-        connectSrc: ["'self'", 'http://localhost:5000', 'http://127.0.0.1:5000'],
+        connectSrc: connectSources,
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
       },
@@ -118,6 +123,7 @@ const PUBLIC_FILES = [
   'style.css',
   'account.css',
   'script.js',
+  'store-settings.js',
   'products.js',
   'product-detail.js',
   'product-detail.css',
@@ -256,7 +262,9 @@ app.get('/api/health', (req, res) => {
 
 // Mount API Routes
 app.use('/api', apiLimiter);
+app.use('/media', require('./routes/media.routes'));
 app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/settings', require('./routes/settings.routes'));
 app.use('/api/categories', require('./routes/category.routes'));
 app.use('/api/products', require('./routes/product.routes'));
 app.use('/api/orders', require('./routes/order.routes'));

@@ -50,7 +50,7 @@
                 </div>
                 <h1 class="product-detail-title">${escapeHtml(product.name)}</h1>
                 ${product.sku ? `<p class="product-detail-sku">كود المنتج: ${escapeHtml(product.sku)}</p>` : ''}
-                <div class="product-detail-price">
+                <div class="product-detail-price customer-price">
                     <strong class="product-detail-current-price">${formatPrice(currentPrice)} <small>ج.م</small></strong>
                     ${sale ? `<span class="product-detail-old-price">${formatPrice(product.price)} ج.م</span><span class="product-detail-discount">خصم ${discount}%</span>` : ''}
                 </div>
@@ -96,6 +96,7 @@
 
     const init = async () => {
         const state = document.getElementById('product-detail-state');
+        if (window.storeSettingsReady) await window.storeSettingsReady;
         const slug = new URLSearchParams(window.location.search).get('slug');
         if (!slug) {
             state.textContent = 'رابط المنتج غير مكتمل. ارجع إلى صفحة المنتجات واختر منتجاً.';

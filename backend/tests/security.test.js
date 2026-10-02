@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const { startHarness, clearDatabase } = require('./harness');
 const Admin = require('../models/Admin');
@@ -304,6 +306,13 @@ test('sensitive repository files are not served', async (t) => {
       '/account.js',
       '/account.html',
       '/products.html',
+      '/product.html',
+      '/cart.html',
+      '/cart.js',
+      '/product-detail.js',
+      '/cart.css',
+      '/product-detail.css',
+      '/favicon.svg',
     ];
 
     for (const p of required) {
@@ -322,6 +331,19 @@ test('sensitive repository files are not served', async (t) => {
       assert.notEqual(res.status, 200, `${p} must not be readable`);
     }
   });
+});
+
+test('robots and sitemap publish the public catalogue pages', async () => {
+  const robots = await h.request('/robots.txt');
+  assert.equal(robots.status, 200);
+  assert.match(robots.text, /Disallow: \/admin\//);
+  assert.match(robots.text, /Sitemap: http:\/\/127\.0\.0\.1:\d+\/sitemap\.xml/);
+
+  const sitemap = await h.request('/sitemap.xml');
+  assert.equal(sitemap.status, 200, sitemap.text);
+  assert.match(sitemap.text, /<urlset/);
+  assert.match(sitemap.text, /http:\/\/127\.0\.0\.1:\d+\/products\.html/);
+  assert.match(sitemap.text, /product\.html\?slug=/);
 });
 
 // ---------------------------------------------------------------------------
@@ -351,6 +373,13 @@ test('the content security policy permits the assets the site actually uses', as
     );
   });
 
+  await t.test('the Font Awesome webfont host is allowed', async () => {
+    assert.ok(
+      directives.fontSrc.includes('https://cdnjs.cloudflare.com'),
+      'Font Awesome webfonts are served from cdnjs and must be allowed by font-src'
+    );
+  });
+
   await t.test('the supplier image host is allowed', async () => {
     assert.ok(
       directives.imgSrc.includes('https://elkhalily.com'),
@@ -374,6 +403,48 @@ test('the content security policy permits the assets the site actually uses', as
     assert.deepEqual(directives.frameAncestors, ["'none'"]);
     assert.deepEqual(directives.objectSrc, ["'none'"]);
   });
+});
+
+test('admin contact rendering escapes submitted content and sanitizes phone links', () => {
+  const adminScript = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'frontend', 'admin', 'admin.js'),
+    'utf8'
+  );
+  assert.match(adminScript, /escapeHtml\(c\.name\)/);
+  assert.match(adminScript, /escapeHtml\(c\.message\)/);
+  assert.match(adminScript, /replace\(\/\\D\/g, ''\)/);
+});
+
+test('frontend controls do not rely on inline event handlers blocked by CSP', () => {
+  const frontendDir = path.join(__dirname, '..', '..', 'frontend');
+  const files = [];
+  const collect = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) collect(fullPath);
+      else if (/\.(html|js)$/i.test(entry.name)) files.push(fullPath);
+    }
+  };
+  collect(frontendDir);
+
+  for (const file of files) {
+    assert.doesNotMatch(
+      fs.readFileSync(file, 'utf8'),
+      /\son(?:click|change|error|submit|load)=/i,
+      `${path.relative(frontendDir, file)} must attach handlers through JavaScript`
+    );
+  }
+});
+
+test('storefront and admin mobile menus use accessible buttons', () => {
+  const frontendDir = path.join(__dirname, '..', '..', 'frontend');
+  for (const page of ['index.html', 'products.html', 'product.html', 'cart.html', 'account.html']) {
+    const html = fs.readFileSync(path.join(frontendDir, page), 'utf8');
+    assert.match(html, /<button[^>]*class="menu-toggle"[^>]*aria-expanded="false"[^>]*aria-controls="site-navigation"/);
+    assert.match(html, /<ul class="nav-links" id="site-navigation">/);
+  }
+  const admin = fs.readFileSync(path.join(frontendDir, 'admin', 'index.html'), 'utf8');
+  assert.match(admin, /<button[^>]*id="admin-menu-toggle"[^>]*aria-controls="admin-sidebar"/);
 });
 
 // ---------------------------------------------------------------------------

@@ -30,6 +30,7 @@ const state = {
 // Products are cached across page changes so the cart can still resolve a
 // product the user added earlier and is no longer on screen.
 const productCache = new Map();
+let cartFocusReturn = null;
 
 let cart = JSON.parse(localStorage.getItem('abu_rabie_cart') || '[]');
 
@@ -134,7 +135,7 @@ function renderError(message) {
             <h3>تعذر تحميل المنتجات حالياً</h3>
             <p>${escapeHtml(message || '')}</p>
             <p>يرجى التأكد من الاتصال بالإنترنت والمحاولة مرة أخرى.</p>
-            <button class="btn-product btn-cart" onclick="location.reload()" style="margin-top:1rem;">
+            <button type="button" class="btn-product btn-cart" data-retry-products style="margin-top:1rem;">
                 <i class="fa-solid fa-rotate-right"></i> إعادة المحاولة
             </button>
         </div>
@@ -171,7 +172,7 @@ function renderCategories() {
                 typeof opt.count === 'number'
                     ? `<span class="filter-count">${opt.count}</span>`
                     : '';
-            return `<button class="filter-btn ${active}" data-cat="${escapeHtml(opt.value)}">
+            return `<button type="button" class="filter-btn ${active}" data-cat="${escapeHtml(opt.value)}">
                 ${escapeHtml(opt.label)}${count}
             </button>`;
         })
@@ -265,21 +266,23 @@ function renderProducts() {
                 <div class="product-img">
                     ${discountPct > 0 ? `<span class="discount-badge">خصم ${discountPct}%</span>` : ''}
                     ${!p.inStock ? '<span class="out-of-stock-badge">غير متوفر</span>' : ''}
-                    <img src="${escapeHtml(p.image || 'assets/logo.jpg')}" alt="${escapeHtml(p.name)}"
-                        loading="lazy" onerror="this.src='assets/logo.jpg'">
+                    <a class="product-image-link" href="product.html?slug=${encodeURIComponent(p.slug || p._id)}" aria-label="تفاصيل ${escapeHtml(p.name)}">
+                        <img src="${escapeHtml(p.image || 'assets/logo.jpg')}" alt="${escapeHtml(p.name)}"
+                            loading="lazy" data-fallback-src="assets/logo.jpg">
+                    </a>
                 </div>
                 <div class="product-info">
                     <div class="product-meta">
                         <span class="category">${escapeHtml(p.brand || 'أصلي')} | ${escapeHtml(categoryLabel)}</span>
                         ${p.sku ? `<span class="sku-tag">كود: ${escapeHtml(p.sku)}</span>` : ''}
                     </div>
-                    <h3>${escapeHtml(p.name)}</h3>
+                    <h3><a class="product-title-link" href="product.html?slug=${encodeURIComponent(p.slug || p._id)}">${escapeHtml(p.name)}</a></h3>
                     <div class="price-container">
                         ${hasDiscount ? `<span class="old-price">${p.price} ج.م</span>` : ''}
                         <span class="price">${currentPrice} ج.م</span>
                     </div>
                     <div class="product-actions">
-                        <button class="btn-product btn-cart" data-add-to-cart="${escapeHtml(p._id)}"
+                        <button type="button" class="btn-product btn-cart" data-add-to-cart="${escapeHtml(p._id)}"
                             ${p.inStock ? '' : 'disabled'}>
                             <i class="fa-solid fa-cart-plus"></i> ${p.inStock ? 'إضافة للسلة' : 'غير متوفر'}
                         </button>
@@ -292,6 +295,12 @@ function renderProducts() {
             </div>
         `;
     }).join('');
+
+    grid.querySelectorAll('img[data-fallback-src]').forEach((image) => {
+        image.addEventListener('error', () => {
+            image.src = image.dataset.fallbackSrc;
+        }, { once: true });
+    });
 
     grid.querySelectorAll('[data-add-to-cart]').forEach((btn) => {
         btn.addEventListener('click', () => addToCart(btn.dataset.addToCart));
@@ -323,16 +332,16 @@ function renderPagination() {
             if (idx > 0 && p - pages[idx - 1] > 1) {
                 return '<span class="page-gap">...</span>';
             }
-            return `<button class="page-btn ${p === page ? 'active' : ''}" data-page="${p}">${p}</button>`;
+            return `<button type="button" class="page-btn ${p === page ? 'active' : ''}" data-page="${p}">${p}</button>`;
         })
         .join('');
 
     container.innerHTML = `
-        <button class="page-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''} title="السابق">
+        <button type="button" class="page-btn" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''} title="السابق" aria-label="الصفحة السابقة">
             <i class="fa-solid fa-chevron-right"></i>
         </button>
         ${buttons}
-        <button class="page-btn" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''} title="التالي">
+        <button type="button" class="page-btn" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''} title="التالي" aria-label="الصفحة التالية">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
     `;
@@ -399,6 +408,7 @@ function removeFromCart(id) {
 
 function saveCart() {
     localStorage.setItem('abu_rabie_cart', JSON.stringify(cart));
+    window.dispatchEvent(new CustomEvent('cart:updated', { detail: cart }));
 }
 
 function updateCartBadge() {
@@ -407,14 +417,20 @@ function updateCartBadge() {
     if (badge) {
         badge.textContent = totalCount;
         badge.style.display = totalCount > 0 ? 'inline-block' : 'none';
+        document.getElementById('floating-cart-btn')?.setAttribute(
+            'aria-label',
+            totalCount ? `فتح السلة، ${totalCount} منتجات` : 'فتح سلة المشتريات'
+        );
     }
 }
 
 // Setup Cart UI (Floating button and Checkout drawer)
 function setupCartUI() {
-    const cartButton = document.createElement('div');
+    const cartButton = document.createElement('button');
     cartButton.id = 'floating-cart-btn';
     cartButton.className = 'floating-cart';
+    cartButton.type = 'button';
+    cartButton.setAttribute('aria-label', 'فتح سلة المشتريات');
     cartButton.innerHTML = `
         <i class="fa-solid fa-cart-shopping"></i>
         <span id="cart-count" class="cart-badge" style="display: none;">0</span>
@@ -426,11 +442,12 @@ function setupCartUI() {
     const cartModal = document.createElement('div');
     cartModal.id = 'cart-modal';
     cartModal.className = 'cart-modal';
+    cartModal.setAttribute('aria-label', 'سلة المشتريات');
     cartModal.innerHTML = `
-        <div class="cart-drawer">
+        <section class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-modal-title" tabindex="-1">
             <div class="cart-header">
-                <h3><i class="fa-solid fa-cart-shopping" style="color: var(--primary-color);"></i> سلة المشتريات</h3>
-                <button class="cart-close" id="close-cart-btn">&times;</button>
+                <h3 id="cart-modal-title"><i class="fa-solid fa-cart-shopping" style="color: var(--primary-color);"></i> سلة المشتريات</h3>
+                <button type="button" class="cart-close" id="close-cart-btn" aria-label="إغلاق السلة">&times;</button>
             </div>
             <div class="cart-items" id="cart-items-container"></div>
             <div class="cart-summary">
@@ -449,13 +466,27 @@ function setupCartUI() {
                     </button>
                 </form>
             </div>
-        </div>
+        </section>
     `;
     document.body.appendChild(cartModal);
 
     document.getElementById('close-cart-btn').addEventListener('click', closeCartModal);
     cartModal.addEventListener('click', (e) => {
         if (e.target === cartModal) closeCartModal();
+    });
+    cartModal.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab') return;
+        const focusable = [...cartModal.querySelectorAll('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), a[href]')];
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     });
     document.getElementById('checkout-form').addEventListener('submit', handleCheckout);
 
@@ -466,13 +497,22 @@ function setupCartUI() {
     updateCartBadge();
 }
 
-function openCartModal() {
+function openCartModal(event) {
     renderCartItems();
-    document.getElementById('cart-modal').classList.add('active');
+    const modal = document.getElementById('cart-modal');
+    cartFocusReturn = event?.currentTarget || document.activeElement;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    modal.querySelector('.cart-close')?.focus();
 }
 
 function closeCartModal() {
-    document.getElementById('cart-modal')?.classList.remove('active');
+    const modal = document.getElementById('cart-modal');
+    if (!modal?.classList.contains('active')) return;
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    if (cartFocusReturn?.isConnected) cartFocusReturn.focus();
+    cartFocusReturn = null;
 }
 
 function renderCartItems() {
@@ -502,12 +542,12 @@ function renderCartItems() {
                     <h4>${escapeHtml(item.name)}</h4>
                     <span class="item-price">${item.price} ج.م</span>
                     <div class="qty-controls">
-                        <button data-cart-delta="-1" data-id="${escapeHtml(item.id)}">-</button>
+                        <button type="button" data-cart-delta="-1" data-id="${escapeHtml(item.id)}" aria-label="تقليل كمية ${escapeHtml(item.name)}">-</button>
                         <span>${item.quantity}</span>
-                        <button data-cart-delta="1" data-id="${escapeHtml(item.id)}">+</button>
+                        <button type="button" data-cart-delta="1" data-id="${escapeHtml(item.id)}" aria-label="زيادة كمية ${escapeHtml(item.name)}">+</button>
                     </div>
                 </div>
-                <button class="remove-btn" data-cart-remove="${escapeHtml(item.id)}" title="حذف">&times;</button>
+                <button type="button" class="remove-btn" data-cart-remove="${escapeHtml(item.id)}" title="حذف" aria-label="حذف ${escapeHtml(item.name)}">&times;</button>
             </div>
         `;
         })
@@ -528,6 +568,10 @@ function renderCartItems() {
 // Handle Order Checkout
 async function handleCheckout(e) {
     e.preventDefault();
+    if (localStorage.getItem('abu_rabie_token')) {
+        window.location.href = 'cart.html';
+        return;
+    }
     if (cart.length === 0) {
         alert('سلة المشتريات فارغة');
         return;
@@ -602,7 +646,7 @@ async function handleCheckout(e) {
     }
 
     closeCartModal();
-    window.open(whatsappUrl, '_blank');
+    window.location.assign(whatsappUrl);
 }
 
 // ---------------------------------------------------------------------------
@@ -610,6 +654,9 @@ async function handleCheckout(e) {
 // ---------------------------------------------------------------------------
 
 function setupEventListeners() {
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-retry-products]')) loadProducts();
+    });
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         // Debounced so a fast typist does not fire a request per keystroke

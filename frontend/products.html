@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="description" content="منتجات مركز أبو ربيع للمعدات - أحدث المعدات وقطع الغيار الأصلية.">
     <title>منتجاتنا - مركز أبو ربيع للمعدات</title>
     <!-- Fonts -->
@@ -24,16 +25,17 @@
             <a href="index.html" class="logo">
                 <img src="assets/logo.jpg" alt="شعار مركز أبو ربيع للمعدات">
             </a>
-            <ul class="nav-links">
+            <ul class="nav-links" id="site-navigation">
                 <li><a href="index.html">الرئيسية</a></li>
                 <li><a href="products.html" class="active">المنتجات</a></li>
+                <li><a href="cart.html" class="nav-cart-link"><i class="fa-solid fa-cart-shopping"></i> السلة <span class="nav-cart-count" aria-live="polite">0</span></a></li>
                 <li><a href="index.html#services">خدماتنا</a></li>
                 <li><a href="index.html#about">من نحن</a></li>
                 <li><a href="index.html#contact-form" class="btn-primary">اتصل بنا</a></li>
             </ul>
-            <div class="menu-toggle">
-                <i class="fa-solid fa-bars"></i>
-            </div>
+            <button type="button" class="menu-toggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="site-navigation">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
         </div>
     </nav>
 
@@ -55,7 +57,7 @@
         <div class="container">
             <!-- Filter/Categories -->
             <div class="categories-filter">
-                <button class="filter-btn active">الكل</button>
+                <button type="button" class="filter-btn active">الكل</button>
             </div>
 
             <!-- Toolbar: sort + brand + result count -->
@@ -124,6 +126,7 @@
 
     <script src="script.js"></script>
     <script src="products.js"></script>
+    <script src="cart.js"></script>
 </body>
 
 </html>

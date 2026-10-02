@@ -68,6 +68,31 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 const navItems = document.querySelectorAll('.nav-item');
 const tabContents = document.querySelectorAll('.tab-content');
 const pageTitle = document.getElementById('current-tab-title');
+const sidebar = document.getElementById('admin-sidebar');
+const sidebarToggle = document.getElementById('admin-menu-toggle');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+const closeAdminSidebar = () => {
+    const wasOpen = sidebar?.classList.contains('open');
+    sidebar?.classList.remove('open');
+    sidebarBackdrop?.classList.remove('active');
+    sidebarToggle?.setAttribute('aria-expanded', 'false');
+    sidebarToggle?.setAttribute('aria-label', 'فتح القائمة');
+    if (wasOpen) sidebarToggle?.focus();
+};
+
+sidebarToggle?.addEventListener('click', () => {
+    const open = !sidebar?.classList.contains('open');
+    sidebar?.classList.toggle('open', open);
+    sidebarBackdrop?.classList.toggle('active', open);
+    sidebarToggle.setAttribute('aria-expanded', String(open));
+    sidebarToggle.setAttribute('aria-label', open ? 'إغلاق القائمة' : 'فتح القائمة');
+    if (open) sidebar?.querySelector('.nav-item')?.focus();
+});
+sidebarBackdrop?.addEventListener('click', closeAdminSidebar);
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && sidebar?.classList.contains('open')) closeAdminSidebar();
+});
 
 navItems.forEach(item => {
     item.addEventListener('click', (e) => {
@@ -76,6 +101,7 @@ navItems.forEach(i => i.classList.remove('active'));
 item.classList.add('active');
 
 const tab = item.dataset.tab;
+        closeAdminSidebar();
 tabContents.forEach(c => c.style.display = 'none');
 document.getElementById(`tab-${tab}`).style.display = 'block';
 pageTitle.textContent = item.textContent.trim();
@@ -106,11 +132,11 @@ if (json.success) {
     } else {
         tbody.innerHTML = data.recentOrders.map(o => `
             <tr>
-                <td><strong>${o.orderNumber}</strong></td>
-                <td>${o.customerName}</td>
-                <td>${o.customerPhone}</td>
+                <td><strong>${escapeHtml(o.orderNumber)}</strong></td>
+                <td>${escapeHtml(o.customerName)}</td>
+                <td>${escapeHtml(o.customerPhone)}</td>
                 <td><strong style="color: var(--primary);">${o.totalAmount} ج.م</strong></td>
-                <td><span class="badge ${o.status === 'مكتمل' ? 'badge-success' : o.status === 'ملغي' ? 'badge-danger' : 'badge-warning'}">${o.status}</span></td>
+                <td><span class="badge ${o.status === 'مكتمل' ? 'badge-success' : o.status === 'ملغي' ? 'badge-danger' : 'badge-warning'}">${escapeHtml(o.status)}</span></td>
                 <td>${new Date(o.createdAt).toLocaleDateString('ar-EG')}</td>
             </tr>
         `).join('');
@@ -153,7 +179,7 @@ function renderPagination(kind, currentPage, totalPages) {
     const buttons = [];
     const push = (p, label, disabled, active) => {
         buttons.push(
-            `<button class="page-btn${active ? ' active' : ''}" data-page="${p}"${
+            `<button type="button" class="page-btn${active ? ' active' : ''}" data-page="${p}"${
                 disabled ? ' disabled' : ''
             }>${label}</button>`
         );
@@ -238,7 +264,7 @@ async function loadProducts() {
             tbody.innerHTML = json.data.map(p => `
         <tr>
             <td>
-                <img src="${escapeHtml(p.image) || '../assets/logo.jpg'}" class="product-thumb" alt="${escapeHtml(p.name)}" onerror="this.src='../assets/logo.jpg'">
+                <img src="${escapeHtml(p.image) || '../assets/logo.jpg'}" class="product-thumb" alt="${escapeHtml(p.name)}" data-fallback-src="../assets/logo.jpg">
             </td>
             <td><strong>${escapeHtml(p.name)}</strong></td>
             <td>${escapeHtml(p.sku) || '-'}</td>
@@ -252,12 +278,18 @@ async function loadProducts() {
             </td>
             <td>
                 <div class="actions-cell">
-                    <button class="btn-icon" onclick="editProduct('${p._id}')" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn-icon delete" onclick="deleteProduct('${p._id}')" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" class="btn-icon" data-product-action="edit" data-id="${escapeHtml(p._id)}" title="تعديل" aria-label="تعديل ${escapeHtml(p.name)}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
+                    <button type="button" class="btn-icon delete" data-product-action="delete" data-id="${escapeHtml(p._id)}" title="حذف" aria-label="حذف ${escapeHtml(p.name)}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                 </div>
             </td>
         </tr>
     `).join('');
+
+            tbody.querySelectorAll('img[data-fallback-src]').forEach((image) => {
+                image.addEventListener('error', () => {
+                    image.src = image.dataset.fallbackSrc;
+                }, { once: true });
+            });
 
             renderPagination('products', s.page, s.totalPages);
             renderTableInfo('products', json.total || 0, s.page, s.totalPages, ADMIN_PAGE_SIZE);
@@ -272,6 +304,18 @@ async function loadProducts() {
         showToast('خطأ أثناء تحميل المنتجات', 'error');
     }
 }
+
+document.getElementById('products-table-body').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-product-action]');
+    if (!button) return;
+    if (button.dataset.productAction === 'edit') window.editProduct(button.dataset.id);
+    if (button.dataset.productAction === 'delete') window.deleteProduct(button.dataset.id);
+});
+
+document.getElementById('orders-table-body').addEventListener('change', (event) => {
+    const select = event.target.closest('[data-order-status]');
+    if (select) window.updateOrderStatus(select.dataset.orderStatus, select.value);
+});
 
 // Product Modal Handlers
 const modal = document.getElementById('product-modal');
@@ -427,7 +471,7 @@ async function loadOrders() {
             <td>${o.items ? o.items.map(i => `${escapeHtml(i.name)} (×${i.quantity})`).join('<br>') : '-'}</td>
             <td><strong style="color: var(--primary);">${o.totalAmount} ج.م</strong></td>
             <td>
-                <select onchange="updateOrderStatus('${o._id}', this.value)" class="form-control" style="padding: 4px 8px; font-size: 0.85rem;">
+                <select data-order-status="${escapeHtml(o._id)}" aria-label="تغيير حالة الطلب ${escapeHtml(o.orderNumber)}" class="form-control" style="padding: 4px 8px; font-size: 0.85rem;">
                     <option value="جديد" ${o.status === 'جديد' ? 'selected' : ''}>جديد</option>
                     <option value="قيد التنفيذ" ${o.status === 'قيد التنفيذ' ? 'selected' : ''}>قيد التنفيذ</option>
                     <option value="تم الشحن" ${o.status === 'تم الشحن' ? 'selected' : ''}>تم الشحن</option>
@@ -436,7 +480,7 @@ async function loadOrders() {
                 </select>
             </td>
             <td>
-                <a href="https://wa.me/20${escapeHtml(String(o.customerPhone).replace(/^0/, ''))}" target="_blank" rel="noopener" class="btn-icon" style="color: #25D366; text-decoration: none;" title="محادثة واتساب">
+                <a href="https://wa.me/${(() => { const phone = String(o.customerPhone || '').replace(/\D/g, ''); return phone.startsWith('0') ? `20${phone.slice(1)}` : phone; })()}" target="_blank" rel="noopener noreferrer" class="btn-icon" style="color: #25D366; text-decoration: none;" title="محادثة واتساب" aria-label="محادثة واتساب مع ${escapeHtml(o.customerName)}">
                     <i class="fa-brands fa-whatsapp"></i>
                 </a>
             </td>
@@ -482,9 +526,9 @@ const tbody = document.getElementById('contacts-table-body');
 if (json.success && json.data.length > 0) {
     tbody.innerHTML = json.data.map(c => `
         <tr>
-            <td><strong>${c.name}</strong></td>
-            <td><a href="tel:${c.phone}" style="color: var(--info);">${c.phone}</a></td>
-            <td style="max-width: 300px;">${c.message}</td>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td><a href="tel:${String(c.phone || '').replace(/\D/g, '')}" style="color: var(--info);">${escapeHtml(c.phone)}</a></td>
+            <td style="max-width: 300px;">${escapeHtml(c.message)}</td>
             <td>${new Date(c.createdAt).toLocaleDateString('ar-EG')}</td>
             <td>
                 <span class="badge ${c.isRead ? 'badge-success' : 'badge-warning'}">
@@ -493,8 +537,8 @@ if (json.success && json.data.length > 0) {
             </td>
             <td>
                 <div class="actions-cell">
-                    ${!c.isRead ? `<button class="btn-icon" onclick="markContactRead('${c._id}')" title="تحديد كمقروء"><i class="fa-solid fa-check"></i></button>` : ''}
-                    <a href="https://wa.me/20${c.phone.replace(/^0/, '')}" target="_blank" class="btn-icon" style="color: #25D366; text-decoration: none;" title="مراسلة"><i class="fa-brands fa-whatsapp"></i></a>
+                    ${!c.isRead ? `<button type="button" class="btn-icon" data-contact-read="${escapeHtml(c._id)}" title="تحديد كمقروء" aria-label="تحديد كمقروء"><i class="fa-solid fa-check" aria-hidden="true"></i></button>` : ''}
+                    <a href="https://wa.me/${(() => { const phone = String(c.phone || '').replace(/\D/g, ''); return phone.startsWith('0') ? `20${phone.slice(1)}` : phone; })()}" target="_blank" rel="noopener noreferrer" class="btn-icon" style="color: #25D366; text-decoration: none;" title="مراسلة"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </td>
         </tr>
@@ -506,6 +550,11 @@ if (json.success && json.data.length > 0) {
 showToast('خطأ أثناء تحميل الرسائل', 'error');
     }
 }
+
+document.getElementById('contacts-table-body').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-contact-read]');
+    if (button) window.markContactRead(button.dataset.contactRead);
+});
 
 window.markContactRead = async function(id) {
     try {

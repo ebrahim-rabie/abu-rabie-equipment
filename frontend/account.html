@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="description" content="حساب العميل - مركز أبو ربيع للمعدات">
     <title>حسابي - مركز أبو ربيع للمعدات</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,16 +22,17 @@
             <a href="index.html" class="logo">
                 <img src="assets/logo.jpg" alt="شعار مركز أبو ربيع للمعدات">
             </a>
-            <ul class="nav-links">
+            <ul class="nav-links" id="site-navigation">
+                <li><a href="cart.html" class="nav-cart-link"><i class="fa-solid fa-cart-shopping"></i> السلة <span class="nav-cart-count" aria-live="polite">0</span></a></li>
                 <li><a href="index.html">الرئيسية</a></li>
                 <li><a href="products.html">المنتجات</a></li>
                 <li><a href="index.html#services">خدماتنا</a></li>
                 <li><a href="account.html" class="active">حسابي</a></li>
                 <li><a href="index.html#contact-form" class="btn-primary">اتصل بنا</a></li>
             </ul>
-            <div class="menu-toggle">
-                <i class="fa-solid fa-bars"></i>
-            </div>
+            <button type="button" class="menu-toggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="site-navigation">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
         </div>
     </nav>
 
@@ -40,8 +42,8 @@
         <section id="auth-view" class="auth-view container" hidden>
             <div class="auth-card">
                 <div class="auth-tabs">
-                    <button class="auth-tab active" data-tab="login">تسجيل الدخول</button>
-                    <button class="auth-tab" data-tab="register">حساب جديد</button>
+                    <button type="button" class="auth-tab active" data-tab="login">تسجيل الدخول</button>
+                    <button type="button" class="auth-tab" data-tab="register">حساب جديد</button>
                 </div>
 
                 <!-- Login -->
@@ -95,22 +97,22 @@
                     <h1 id="greeting">مرحباً بك</h1>
                     <p id="member-since" class="muted"></p>
                 </div>
-                <button id="logout-btn" class="btn-outline">
+                <button type="button" id="logout-btn" class="btn-outline">
                     <i class="fa-solid fa-sign-out-alt"></i> تسجيل الخروج
                 </button>
             </header>
 
             <nav class="account-tabs">
-                <button class="account-tab active" data-panel="orders">
+                <button type="button" class="account-tab active" data-panel="orders">
                     <i class="fa-solid fa-box"></i> طلباتي
                 </button>
-                <button class="account-tab" data-panel="profile">
+                <button type="button" class="account-tab" data-panel="profile">
                     <i class="fa-solid fa-user"></i> بياناتي
                 </button>
-                <button class="account-tab" data-panel="addresses">
+                <button type="button" class="account-tab" data-panel="addresses">
                     <i class="fa-solid fa-location-dot"></i> عناويني
                 </button>
-                <button class="account-tab" data-panel="security">
+                <button type="button" class="account-tab" data-panel="security">
                     <i class="fa-solid fa-lock"></i> الأمان
                 </button>
             </nav>
@@ -193,7 +195,7 @@
                 <div class="danger-zone">
                     <h3>حذف الحساب</h3>
                     <p>سيتم حذف حسابك وعناوينك نهائياً. الطلبات السابقة لن تُحذف.</p>
-                    <button id="delete-account-btn" class="btn-danger">
+                    <button type="button" id="delete-account-btn" class="btn-danger">
                         <i class="fa-solid fa-trash"></i> حذف حسابي
                     </button>
                 </div>
@@ -204,7 +206,7 @@
     <!-- Order detail -->
     <div id="order-modal" class="modal" hidden>
         <div class="modal-card">
-            <button class="modal-close" id="order-modal-close">&times;</button>
+            <button type="button" class="modal-close" id="order-modal-close" aria-label="إغلاق">&times;</button>
             <div id="order-modal-body"></div>
         </div>
     </div>
@@ -244,6 +246,7 @@
 
     <script src="script.js"></script>
     <script src="account.js"></script>
+    <script src="cart.js"></script>
 </body>
 
 </html>

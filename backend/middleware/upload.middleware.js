@@ -2,8 +2,15 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// Render mounts persistent disks under /var/data. Keep local development
+// uploads inside backend/uploads, and allow other hosts to choose their mount.
+const uploadDir = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : process.env.RENDER
+    ? '/var/data/uploads'
+    : path.join(__dirname, '../uploads');
+
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -20,7 +27,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|svg/;
+  const allowedTypes = /jpeg|jpg|png|webp|avif|gif|svg/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
 

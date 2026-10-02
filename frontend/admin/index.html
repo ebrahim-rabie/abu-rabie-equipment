@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <title>لوحة التحكم | مركز أبو ربيع للمعدات</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -257,6 +258,20 @@
             top: 0;
             z-index: 90;
         }
+
+        .admin-menu-toggle {
+            display: none;
+            min-width: 44px;
+            min-height: 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 1.15rem;
+            cursor: pointer;
+        }
+
+        .sidebar-backdrop { display: none; }
 
         .page-title {
             font-size: 1.3rem;
@@ -638,6 +653,11 @@
 
         @media (max-width: 768px) {
             .sidebar {
+                width: min(300px, 86vw);
+                overflow-y: auto;
+            }
+
+            .sidebar {
                 transform: translateX(100%);
             }
 
@@ -647,6 +667,31 @@
 
             .main-wrapper {
                 margin-right: 0;
+                width: 100%;
+            }
+
+            .top-navbar { padding: 0 16px; gap: 12px; }
+            .admin-menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+            .page-title { font-size: 1.05rem; flex: 1; }
+            .user-status { display: none; }
+            .content-area { padding: 16px; }
+            .panel { padding: 16px; overflow: hidden; }
+            .panel-header { align-items: stretch; }
+            .panel-tools { width: 100%; }
+            .admin-search { min-width: 0; width: 100%; flex: 1 1 100%; }
+            .panel-tools .btn-action { width: 100%; justify-content: center; }
+            .btn-icon { width: 44px; height: 44px; flex: 0 0 44px; }
+            .admin-pagination .page-btn { min-width: 40px; height: 40px; }
+            .table-responsive { overscroll-behavior-inline: contain; }
+            .modal { padding: 10px; }
+            .modal-content { max-height: 92dvh; padding: 20px 16px; }
+
+            .sidebar-backdrop.active {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 95;
+                background: rgba(0, 0, 0, .62);
             }
 
             .form-row {
@@ -684,7 +729,8 @@
     </div>
 
     <!-- Admin App Wrapper -->
-    <aside class="sidebar">
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    <aside class="sidebar" id="admin-sidebar" aria-label="قائمة الإدارة">
         <div class="sidebar-header">
             <img src="/assets/logo.jpg" alt="Abu Rabie Logo">
             <div>
@@ -714,18 +760,18 @@
                 </a>
             </li>
             <li>
-                <a href="/products.html" target="_blank">
+                <a href="/products.html" target="_blank" rel="noopener noreferrer">
                     <i class="fa-solid fa-store"></i> المتجر الرئيسي
                 </a>
             </li>
             <li>
-                <a href="/" target="_blank">
+                <a href="/" target="_blank" rel="noopener noreferrer">
                     <i class="fa-solid fa-globe"></i> زيارة الموقع
                 </a>
             </li>
         </ul>
         <div class="sidebar-footer">
-            <button class="btn-logout" id="btn-logout">
+            <button type="button" class="btn-logout" id="btn-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج
             </button>
         </div>
@@ -733,6 +779,9 @@
 
     <div class="main-wrapper">
         <header class="top-navbar">
+            <button type="button" class="admin-menu-toggle" id="admin-menu-toggle" aria-label="فتح القائمة" aria-expanded="false" aria-controls="admin-sidebar">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
             <h2 class="page-title" id="current-tab-title">لوحة الإحصائيات</h2>
             <div class="user-status">
                 <span id="admin-greeting" style="color: var(--primary); font-weight: 700;">مرحباً م/ محمد أبو ربيع</span>
@@ -807,7 +856,7 @@
                         <div class="panel-tools">
                             <input type="search" id="admin-product-search" class="admin-search"
                                 placeholder="ابحث باسم المنتج أو الكود...">
-                            <button class="btn-action" id="btn-add-product">
+                            <button type="button" class="btn-action" id="btn-add-product">
                                 <i class="fa-solid fa-plus"></i> إضافة منتج جديد
                             </button>
                         </div>
@@ -908,7 +957,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-product-title" style="color: var(--primary);">إضافة منتج جديد</h3>
-                <button class="close-modal" id="btn-close-modal">&times;</button>
+                <button type="button" class="close-modal" id="btn-close-modal" aria-label="إغلاق">&times;</button>
             </div>
             <form id="product-form">
                 <input type="hidden" id="prod-id">

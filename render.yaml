@@ -13,6 +13,12 @@ services:
     plan: free
     region: frankfurt
 
+    # Preserve admin product images across restarts and deploys.
+    disk:
+      name: product-uploads
+      mountPath: /var/data
+      sizeGB: 1
+
     # --omit=dev because the test tooling (mongodb-memory-server) is not needed
     # at runtime and would add hundreds of megabytes to the build.
     buildCommand: cd backend && npm ci --omit=dev
@@ -35,6 +41,10 @@ services:
       # Set this to the real site URL, e.g. https://abu-rabie.onrender.com
       # A wildcard is refused in production by config/env.js.
       - key: CLIENT_URL
+        sync: false
+
+      # Canonical public URL used to generate absolute sitemap entries.
+      - key: SITE_URL
         sync: false
 
       # The catalogue imports itself on boot when Mongo is empty, so no seed
@@ -61,3 +71,6 @@ services:
       # Request logging is off in production unless this is switched on.
       - key: LOG_REQUESTS
         value: "false"
+
+      - key: UPLOAD_DIR
+        value: /var/data/uploads

@@ -499,7 +499,18 @@
 @media (max-width: 600px) {
     .account-page {
         padding-top: 110px;
+        padding-bottom: 36px;
     }
+
+    .auth-card { padding: 22px 18px; }
+    .account-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .account-tab { min-height: 44px; padding: 10px 8px; border: 1px solid #383838; border-radius: 8px; }
+    .account-tab.active { border-color: var(--primary-color); }
+    .order-card { padding: 16px; }
+    .order-card header { align-items: flex-start; flex-wrap: wrap; }
+    .form-actions { display: grid; grid-template-columns: 1fr; }
+    .form-actions button { width: 100%; }
+    .danger-zone { padding: 16px; }
 
     .dashboard-header {
         flex-direction: column;

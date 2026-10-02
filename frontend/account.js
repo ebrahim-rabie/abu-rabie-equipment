@@ -91,6 +91,7 @@ const mergeGuestCart = async () => {
             body: { items: guestCart.map((i) => ({ id: i.id, quantity: i.quantity })) },
         });
         localStorage.removeItem('abu_rabie_cart');
+        window.dispatchEvent(new CustomEvent('cart:updated', { detail: [] }));
 
         if (res.skipped > 0) {
             toast(res.message || 'تم دمج السلة');

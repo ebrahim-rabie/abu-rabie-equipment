@@ -120,6 +120,32 @@ const FALLBACK_CATEGORY = {
 };
 
 const DEFAULT_IMAGE = 'assets/logo.jpg';
+const uploadsDir = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : process.env.RENDER
+    ? '/var/data/uploads'
+    : path.join(__dirname, '../uploads');
+const localProductImagesDir = path.join(uploadsDir, 'product-images');
+
+const loadLocalProductImages = () => {
+  const bySourceId = new Map();
+  if (!fs.existsSync(localProductImagesDir)) return bySourceId;
+
+  for (const filename of fs.readdirSync(localProductImagesDir)) {
+    const match = filename.match(/^(\d+)-(\d+)\.(?:jpe?g|png|webp|avif|gif)$/i);
+    if (!match) continue;
+    const paths = bySourceId.get(match[1]) || [];
+    paths.push({ order: Number(match[2]), path: `/uploads/product-images/${filename}` });
+    bySourceId.set(match[1], paths);
+  }
+
+  for (const [sourceId, paths] of bySourceId) {
+    bySourceId.set(sourceId, paths.sort((a, b) => a.order - b.order).map((entry) => entry.path));
+  }
+  return bySourceId;
+};
+
+const localProductImages = loadLocalProductImages();
 
 // The scraped catalogue lives in data/ at the repository root, next to the
 // scraper that produces it.
@@ -199,7 +225,8 @@ const toProductDoc = (item, index, categoryIds) => {
     .map((s) => s.trim())
     .filter((u) => /^https?:\/\//.test(u));
 
-  const image = item.image || gallery[0] || DEFAULT_IMAGE;
+  const localGallery = localProductImages.get(String(item.id || '')) || [];
+  const image = localGallery[0] || item.image || gallery[0] || DEFAULT_IMAGE;
 
   const doc = {
     sourceId: String(item.id || `row-${index + 1}`),
@@ -212,7 +239,7 @@ const toProductDoc = (item, index, categoryIds) => {
     salePrice: salePrice && salePrice < price ? salePrice : null,
     discountPct: salePrice && salePrice < price ? discount : 0,
     image,
-    images: gallery.length ? gallery : [image],
+    images: localGallery.length ? localGallery : gallery.length ? gallery : [image],
     inStock: item.in_stock !== false,
     isFeatured: false, // assigned deterministically after all docs are built
     description: String(

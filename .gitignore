@@ -1,0 +1,24 @@
+node_modules/
+backend/node_modules/
+backend/.env
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/.mongo-data/
+.DS_Store
+Thumbs.db
+*.log
+
+# Offline JSON fallback store (runtime data, not source)
+backend/data/*.json
+!backend/data/*.example.json
+
+# Python scraper
+__pycache__/
+*.pyc
+
+# Scraped image archive (203 MB, regenerate manually - not used by any code)
+data/elkhalily_images.zip
+
+# Scraper CSV exports (regenerate with data/run_scraper.bat; the JSON is tracked
+# because the backend bootstraps from it)
+data/elkhalily_products*.csv

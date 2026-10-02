@@ -33,14 +33,13 @@ services:
       - key: MONGODB_URI
         sync: false
 
-      # Set this to the real site URL, e.g. https://abu-rabie.onrender.com
-      # A wildcard is refused in production by config/env.js.
+      # The storefront is deployed at Vercel; update if its domain changes.
       - key: CLIENT_URL
-        sync: false
+        value: https://abu-rabie-equipment.vercel.app
 
       # Canonical public URL used to generate absolute sitemap entries.
       - key: SITE_URL
-        sync: false
+        value: https://abu-rabie-equipment.vercel.app
 
       # The catalogue imports itself on boot when Mongo is empty, so no seed
       # command is needed for the first deploy. Use `npm run seed -- --reset`

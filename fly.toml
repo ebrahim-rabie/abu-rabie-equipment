@@ -1,0 +1,37 @@
+# Fly.io configuration for Abu Rabie Equipment Backend
+app = "abu-rabie-equipment"
+primary_region = "ams"
+console_command = "/bin/sh"
+
+[build]
+  builder = "heroku"
+
+[processes]
+  web = "cd backend && npm start"
+
+[[services]]
+  internal_port = 5000
+  processes = ["web"]
+  protocol = "tcp"
+  auto_stop = true
+  auto_start = true
+
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+[env]
+  NODE_ENV = "production"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
